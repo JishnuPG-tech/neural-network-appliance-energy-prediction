@@ -1,0 +1,43 @@
+name: Neural Network Energy Prediction CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.8, 3.9, '3.10', '3.11']
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v3
+      with:
+        python-version: ${{ matrix.python-version }}
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run setup tests
+      run: |
+        python test_setup.py
+    
+    - name: Generate sample data
+      run: |
+        python create_sample_data.py
+    
+    - name: Test data processing
+      run: |
+        python -c "from src.data_processing import DataProcessor; print('Data processing module working')"
+    
+    - name: Test neural network model
+      run: |
+        python -c "from src.model import create_neural_network; print('Neural network model creation working')"

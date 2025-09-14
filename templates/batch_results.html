@@ -1,0 +1,306 @@
+{% extends "base.html" %}
+
+{% block title %}Batch Prediction Results{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-12">
+        <!-- Results Summary -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h4 class="mb-0"><i class="fas fa-chart-bar"></i> Batch Prediction Results Summary</h4>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-3">
+                        <div class="stat-number">{{ total_predictions }}</div>
+                        <div class="stat-label">Total Appliances</div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-number">{{ successful_predictions }}</div>
+                        <div class="stat-label">Successful Predictions</div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-number">{{ "%.1f"|format((successful_predictions / total_predictions * 100) if total_predictions > 0 else 0) }}%</div>
+                        <div class="stat-label">Success Rate</div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-number">{{ output_filename }}</div>
+                        <div class="stat-label">Output File</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sample Results -->
+        {% if results %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-table"></i> Sample Results (First 10 rows)</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Appliance Type</th>
+                                <th>Power (W)</th>
+                                <th>Usage (hrs/day)</th>
+                                <th>Efficiency</th>
+                                <th>Age (years)</th>
+                                <th>Household Size</th>
+                                <th>Predicted Consumption (kWh/day)</th>
+                                <th>Monthly Cost (₹)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for result in results %}
+                            <tr>
+                                <td>
+                                    <i class="fas fa-{% if result.appliance_type == 'Refrigerator' %}snowflake{% elif result.appliance_type == 'Air_Conditioner' %}wind{% elif result.appliance_type == 'Washing_Machine' %}tshirt{% elif result.appliance_type == 'Television' %}tv{% else %}plug{% endif %}"></i>
+                                    {{ result.appliance_type.replace('_', ' ') }}
+                                </td>
+                                <td>{{ result.power_rating_watts or result.power_rating or 'N/A' }}</td>
+                                <td>{{ result.usage_hours_per_day or result.usage_hours or 'N/A' }}</td>
+                                <td>
+                                    {% if result.efficiency_rating %}
+                                        {% for i in range(result.efficiency_rating) %}
+                                            <i class="fas fa-star text-warning small"></i>
+                                        {% endfor %}
+                                    {% else %}
+                                        N/A
+                                    {% endif %}
+                                </td>
+                                <td>{{ result.appliance_age_years or result.appliance_age or 'N/A' }}</td>
+                                <td>{{ result.household_size or 'N/A' }}</td>
+                                <td>
+                                    {% if result.predicted_daily_consumption_kwh %}
+                                        <strong class="text-primary">{{ "%.2f"|format(result.predicted_daily_consumption_kwh) }}</strong>
+                                    {% else %}
+                                        <span class="text-danger">Error</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if result.predicted_monthly_cost_inr %}
+                                        <strong class="text-success">₹{{ "%.0f"|format(result.predicted_monthly_cost_inr) }}</strong>
+                                    {% else %}
+                                        <span class="text-danger">-</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% if total_predictions > 10 %}
+                <p class="text-muted mt-3">
+                    <i class="fas fa-info-circle"></i> 
+                    Showing first 10 results. Download the complete file for all {{ total_predictions }} predictions.
+                </p>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Statistics -->
+        {% if results %}
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-chart-pie"></i> Energy Distribution</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="energyDistributionChart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-rupee-sign"></i> Cost Analysis</h5>
+                    </div>
+                    <div class="card-body">
+                        {% set total_daily_consumption = results | selectattr('predicted_daily_consumption_kwh') | map(attribute='predicted_daily_consumption_kwh') | sum %}
+                        {% set total_monthly_cost = results | selectattr('predicted_monthly_cost_inr') | map(attribute='predicted_monthly_cost_inr') | sum %}
+                        
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <div class="stat-number text-primary">{{ "%.2f"|format(total_daily_consumption) }}</div>
+                                <div class="stat-label">Total Daily kWh</div>
+                            </div>
+                            <div class="col-6">
+                                <div class="stat-number text-success">₹{{ "%.0f"|format(total_monthly_cost) }}</div>
+                                <div class="stat-label">Total Monthly Cost</div>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <div class="stat-number text-info">₹{{ "%.0f"|format(total_monthly_cost * 12) }}</div>
+                                <div class="stat-label">Yearly Cost</div>
+                            </div>
+                            <div class="col-6">
+                                <div class="stat-number text-warning">{{ "%.1f"|format(total_daily_consumption * 365 * 0.82 / 1000) }}</div>
+                                <div class="stat-label">Tonnes CO₂/year</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Recommendations -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-lightbulb"></i> Optimization Recommendations</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% if results %}
+                    {% set high_consumption_appliances = results | selectattr('predicted_daily_consumption_kwh') | selectattr('predicted_daily_consumption_kwh', '>', 5) | list %}
+                    {% set old_appliances = results | selectattr('appliance_age_years') | selectattr('appliance_age_years', '>', 8) | list %}
+                    {% set low_efficiency_appliances = results | selectattr('efficiency_rating') | selectattr('efficiency_rating', '<', 3) | list %}
+                    
+                    <div class="col-md-4">
+                        <div class="alert alert-warning">
+                            <h6><i class="fas fa-exclamation-triangle"></i> High Consumption</h6>
+                            {% if high_consumption_appliances %}
+                            <p>{{ high_consumption_appliances | length }} appliance(s) consume over 5 kWh/day:</p>
+                            <ul class="mb-0">
+                                {% for appliance in high_consumption_appliances[:3] %}
+                                <li>{{ appliance.appliance_type.replace('_', ' ') }} ({{ "%.1f"|format(appliance.predicted_daily_consumption_kwh) }} kWh)</li>
+                                {% endfor %}
+                            </ul>
+                            {% else %}
+                            <p class="mb-0">No high-consumption appliances detected.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="alert alert-info">
+                            <h6><i class="fas fa-clock"></i> Old Appliances</h6>
+                            {% if old_appliances %}
+                            <p>{{ old_appliances | length }} appliance(s) are over 8 years old:</p>
+                            <ul class="mb-0">
+                                {% for appliance in old_appliances[:3] %}
+                                <li>{{ appliance.appliance_type.replace('_', ' ') }} ({{ appliance.appliance_age_years }} years)</li>
+                                {% endfor %}
+                            </ul>
+                            {% else %}
+                            <p class="mb-0">All appliances are relatively new.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="alert alert-danger">
+                            <h6><i class="fas fa-star"></i> Low Efficiency</h6>
+                            {% if low_efficiency_appliances %}
+                            <p>{{ low_efficiency_appliances | length }} appliance(s) have efficiency rating below 3 stars:</p>
+                            <ul class="mb-0">
+                                {% for appliance in low_efficiency_appliances[:3] %}
+                                <li>{{ appliance.appliance_type.replace('_', ' ') }} ({{ appliance.efficiency_rating }} stars)</li>
+                                {% endfor %}
+                            </ul>
+                            {% else %}
+                            <p class="mb-0">All appliances have good efficiency ratings.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="col-12">
+                        <p class="text-muted">Recommendations will be available after successful predictions.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="text-center">
+            <a href="{{ url_for('batch_predict') }}" class="btn btn-primary">
+                <i class="fas fa-upload"></i> Upload Another File
+            </a>
+            <a href="{{ url_for('predict') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-calculator"></i> Single Prediction
+            </a>
+            <button onclick="window.print()" class="btn btn-outline-info">
+                <i class="fas fa-print"></i> Print Results
+            </button>
+            {% if output_filename %}
+            <button onclick="downloadResults()" class="btn btn-success">
+                <i class="fas fa-download"></i> Download Full Results
+            </button>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script type="text/javascript">
+document.addEventListener('DOMContentLoaded', function() {
+    {% if results %}
+    // Energy distribution chart
+    const applianceTypes = {};
+    try {
+        const consumptionData = JSON.parse('{{ (results | selectattr("predicted_daily_consumption_kwh") | map(attribute="predicted_daily_consumption_kwh") | list | tojson) | safe }}');
+        const applianceTypeData = JSON.parse('{{ (results | map(attribute="appliance_type") | list | tojson) | safe }}');
+        
+        // Group by appliance type
+        for (let i = 0; i < applianceTypeData.length; i++) {
+            const type = applianceTypeData[i].replace('_', ' ');
+            const consumption = consumptionData[i];
+            if (consumption) {
+                if (applianceTypes[type]) {
+                    applianceTypes[type] += consumption;
+                } else {
+                    applianceTypes[type] = consumption;
+                }
+            }
+        }
+        
+        const ctx = document.getElementById('energyDistributionChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: Object.keys(applianceTypes),
+                datasets: [{
+                    data: Object.values(applianceTypes),
+                    backgroundColor: [
+                        '#3498db', '#e74c3c', '#2ecc71', '#f39c12', '#9b59b6',
+                        '#1abc9c', '#34495e', '#e67e22', '#95a5a6', '#d35400'
+                    ],
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                    },
+                    title: {
+                        display: true,
+                        text: 'Daily Energy Consumption by Appliance Type (kWh)'
+                    }
+                }
+            }
+        });
+    } catch (error) {
+        console.error('Error creating chart:', error);
+    }
+    {% endif %}
+});
+
+function downloadResults() {
+    // In a real implementation, this would download the actual CSV file
+    alert('Full results CSV file would be downloaded. File: {{ output_filename }}');
+}
+</script>
+{% endblock %}

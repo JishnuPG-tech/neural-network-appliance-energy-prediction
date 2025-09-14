@@ -1,0 +1,45 @@
+# Optional Advanced Libraries (install after core requirements)
+# These may require additional build tools on Windows
+
+# Advanced ML Libraries
+catboost
+xgboost
+lightgbm
+
+# Time Series Libraries
+pmdarima
+# prophet  # Comment out if causing issues
+
+# Model Interpretation
+shap
+# lime  # Comment out if causing issues
+
+# Hyperparameter Optimization
+optuna
+# hyperopt  # Comment out if causing issues
+
+# Data Validation
+# great-expectations  # Comment out if causing issues
+
+# Documentation
+sphinx
+sphinx-rtd-theme
+
+# Code Quality
+black
+
+# Feature Engineering
+# feature-engine  # Comment out if causing issues
+
+# Database Connectivity
+sqlalchemy
+# psycopg2-binary  # Comment out if causing issues
+# pymongo  # Comment out if causing issues
+
+# Cloud Storage
+# boto3  # Comment out if causing issues
+# google-cloud-storage  # Comment out if causing issues
+
+# Monitoring and Profiling
+# memory-profiler  # Comment out if causing issues
+# line-profiler  # Comment out if causing issues

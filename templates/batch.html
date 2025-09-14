@@ -1,0 +1,272 @@
+{% extends "base.html" %}
+
+{% block title %}Batch Prediction{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0"><i class="fas fa-upload"></i> Batch Energy Consumption Prediction</h4>
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-4">
+                    Upload a CSV file containing multiple appliances to get energy consumption predictions for all of them at once.
+                </p>
+
+                <form method="POST" enctype="multipart/form-data" id="batchForm">
+                    <div class="mb-4">
+                        <label for="file" class="form-label">Upload CSV File *</label>
+                        <input type="file" class="form-control" id="file" name="file" accept=".csv" required>
+                        <div class="form-text">
+                            File must be in CSV format with required columns. Maximum file size: 10MB.
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                        <button type="submit" class="btn btn-primary btn-lg me-md-2" id="uploadBtn">
+                            <i class="fas fa-cloud-upload-alt"></i> Upload and Predict
+                        </button>
+                        <a href="#sampleData" class="btn btn-outline-info btn-lg" data-bs-toggle="collapse">
+                            <i class="fas fa-download"></i> Download Sample
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Sample Data Format -->
+        <div class="collapse mt-4" id="sampleData">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-table"></i> Required CSV Format</h5>
+                </div>
+                <div class="card-body">
+                    <p>Your CSV file must contain the following columns (case-sensitive):</p>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-striped table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Column Name</th>
+                                    <th>Description</th>
+                                    <th>Required</th>
+                                    <th>Valid Values</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>appliance_type</code></td>
+                                    <td>Type of appliance</td>
+                                    <td><span class="badge bg-danger">Yes</span></td>
+                                    <td>Refrigerator, Air_Conditioner, Washing_Machine, Television, Microwave, Water_Heater, Dishwasher, Computer, Heater, Fan</td>
+                                </tr>
+                                <tr>
+                                    <td><code>power_rating_watts</code></td>
+                                    <td>Power rating in watts</td>
+                                    <td><span class="badge bg-danger">Yes</span></td>
+                                    <td>1-10000</td>
+                                </tr>
+                                <tr>
+                                    <td><code>usage_hours_per_day</code></td>
+                                    <td>Daily usage hours</td>
+                                    <td><span class="badge bg-danger">Yes</span></td>
+                                    <td>0-24</td>
+                                </tr>
+                                <tr>
+                                    <td><code>efficiency_rating</code></td>
+                                    <td>Star rating (1-5)</td>
+                                    <td><span class="badge bg-danger">Yes</span></td>
+                                    <td>1, 2, 3, 4, 5</td>
+                                </tr>
+                                <tr>
+                                    <td><code>appliance_age_years</code></td>
+                                    <td>Age in years</td>
+                                    <td><span class="badge bg-danger">Yes</span></td>
+                                    <td>0-50</td>
+                                </tr>
+                                <tr>
+                                    <td><code>household_size</code></td>
+                                    <td>Number of people</td>
+                                    <td><span class="badge bg-danger">Yes</span></td>
+                                    <td>1-20</td>
+                                </tr>
+                                <tr>
+                                    <td><code>location</code></td>
+                                    <td>Location type</td>
+                                    <td><span class="badge bg-warning">Optional</span></td>
+                                    <td>Urban, Suburban, Rural (default: Urban)</td>
+                                </tr>
+                                <tr>
+                                    <td><code>income_level</code></td>
+                                    <td>Income level</td>
+                                    <td><span class="badge bg-warning">Optional</span></td>
+                                    <td>Low, Medium, High (default: Medium)</td>
+                                </tr>
+                                <tr>
+                                    <td><code>season</code></td>
+                                    <td>Current season</td>
+                                    <td><span class="badge bg-warning">Optional</span></td>
+                                    <td>Spring, Summer, Autumn, Winter (default: Summer)</td>
+                                </tr>
+                                <tr>
+                                    <td><code>usage_pattern</code></td>
+                                    <td>Usage pattern</td>
+                                    <td><span class="badge bg-warning">Optional</span></td>
+                                    <td>Occasional, Light, Moderate, Heavy (default: Moderate)</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="mt-4">
+                        <h6>Sample CSV Content:</h6>
+                        <pre class="bg-light p-3"><code>appliance_type,power_rating_watts,usage_hours_per_day,efficiency_rating,appliance_age_years,household_size,location,income_level,season,usage_pattern
+Refrigerator,400,24,4,3,4,Urban,Medium,Summer,Moderate
+Air_Conditioner,1500,8,3,5,4,Urban,Medium,Summer,Heavy
+Washing_Machine,800,1,4,2,4,Urban,Medium,Summer,Moderate
+Television,150,6,3,4,4,Urban,Medium,Summer,Moderate</code></pre>
+                    </div>
+
+                    <div class="text-center mt-3">
+                        <button onclick="downloadSampleCSV()" class="btn btn-success">
+                            <i class="fas fa-download"></i> Download Sample CSV
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Instructions -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-info-circle"></i> Instructions</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-check-circle text-success"></i> Do:</h6>
+                        <ul>
+                            <li>Use the exact column names as shown above</li>
+                            <li>Ensure all required fields are filled</li>
+                            <li>Use valid values for categorical columns</li>
+                            <li>Save your file in CSV format</li>
+                            <li>Include headers in the first row</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-times-circle text-danger"></i> Don't:</h6>
+                        <ul>
+                            <li>Change column names or add extra spaces</li>
+                            <li>Leave required fields empty</li>
+                            <li>Use values outside the specified ranges</li>
+                            <li>Upload files larger than 10MB</li>
+                            <li>Include special characters in data</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Processing Info -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-cogs"></i> What Happens Next?</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 text-center">
+                        <i class="fas fa-upload fa-2x text-primary mb-2"></i>
+                        <h6>1. Upload</h6>
+                        <p class="small">Your CSV file is uploaded and validated</p>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <i class="fas fa-brain fa-2x text-info mb-2"></i>
+                        <h6>2. Process</h6>
+                        <p class="small">Neural network analyzes each appliance</p>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <i class="fas fa-chart-line fa-2x text-success mb-2"></i>
+                        <h6>3. Predict</h6>
+                        <p class="small">Energy consumption is calculated</p>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <i class="fas fa-download fa-2x text-warning mb-2"></i>
+                        <h6>4. Download</h6>
+                        <p class="small">Results are provided in CSV format</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Form submission handling
+    document.getElementById('batchForm').addEventListener('submit', function(e) {
+        const fileInput = document.getElementById('file');
+        const uploadBtn = document.getElementById('uploadBtn');
+        
+        if (!fileInput.files.length) {
+            alert('Please select a CSV file to upload');
+            e.preventDefault();
+            return;
+        }
+        
+        const file = fileInput.files[0];
+        
+        // Check file size (10MB limit)
+        if (file.size > 10 * 1024 * 1024) {
+            alert('File size must be less than 10MB');
+            e.preventDefault();
+            return;
+        }
+        
+        // Check file type
+        if (!file.name.toLowerCase().endsWith('.csv')) {
+            alert('Please upload a CSV file');
+            e.preventDefault();
+            return;
+        }
+        
+        // Show loading state
+        uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+        uploadBtn.disabled = true;
+    });
+
+    // Download sample CSV
+    function downloadSampleCSV() {
+        const csvContent = `appliance_type,power_rating_watts,usage_hours_per_day,efficiency_rating,appliance_age_years,household_size,location,income_level,season,usage_pattern
+Refrigerator,400,24,4,3,4,Urban,Medium,Summer,Moderate
+Air_Conditioner,1500,8,3,5,4,Urban,Medium,Summer,Heavy
+Washing_Machine,800,1,4,2,4,Urban,Medium,Summer,Moderate
+Television,150,6,3,4,4,Urban,Medium,Summer,Moderate
+Microwave,1000,0.5,3,1,4,Urban,Medium,Summer,Light
+Water_Heater,3000,3,2,8,4,Urban,Medium,Winter,Heavy
+Computer,400,8,4,2,4,Urban,High,Summer,Moderate
+Fan,75,12,4,1,4,Urban,Low,Summer,Heavy`;
+        
+        const blob = new Blob([csvContent], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'appliance_energy_sample.csv';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+    }
+
+    // File input change handler
+    document.getElementById('file').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const fileName = file.name;
+            const fileSize = (file.size / 1024 / 1024).toFixed(2);
+            console.log(`Selected file: ${fileName} (${fileSize} MB)`);
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Appliance Energy Prediction{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <!-- Hero Section -->
+        <div class="card mb-4">
+            <div class="card-body text-center py-5">
+                <div class="energy-icon">
+                    <i class="fas fa-bolt"></i>
+                </div>
+                <h1 class="display-4 mb-3">Neural Network-Based<br>Appliance Energy Predictor</h1>
+                <p class="lead mb-4">
+                    Predict your appliance's daily energy consumption using advanced machine learning.
+                    Make informed decisions about energy efficiency and cost savings.
+                </p>
+                <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                    <a href="{{ url_for('predict') }}" class="btn btn-primary btn-lg me-md-2">
+                        <i class="fas fa-calculator"></i> Start Prediction
+                    </a>
+                    <a href="{{ url_for('batch_predict') }}" class="btn btn-outline-secondary btn-lg">
+                        <i class="fas fa-upload"></i> Batch Analysis
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Features Section -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <i class="fas fa-brain fa-2x mb-3" style="color: var(--secondary-color);"></i>
+                    <h5>Neural Network</h5>
+                    <p class="mb-0">Advanced deep learning model with 50+ engineered features for accurate predictions.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <i class="fas fa-home fa-2x mb-3" style="color: var(--success-color);"></i>
+                    <h5>10+ Appliances</h5>
+                    <p class="mb-0">Supports refrigerators, AC units, washing machines, TVs, and more household appliances.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <i class="fas fa-leaf fa-2x mb-3" style="color: var(--warning-color);"></i>
+                    <h5>Eco-Friendly</h5>
+                    <p class="mb-0">Calculate carbon footprint and get energy-saving recommendations.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Model Information -->
+        {% if model_info %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-info-circle"></i> Model Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <strong>Model Status:</strong> 
+                        <span class="badge bg-success">Active</span>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Features:</strong> {{ model_info.get('feature_count', 'Unknown') }}
+                    </div>
+                </div>
+                <hr>
+                <div class="row">
+                    <div class="col-md-6">
+                        <strong>Architecture:</strong> Deep Neural Network
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Framework:</strong> TensorFlow/Keras
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Instructions -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-question-circle"></i> How to Use</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-calculator text-primary"></i> Single Prediction</h6>
+                        <ol>
+                            <li>Click "Start Prediction"</li>
+                            <li>Enter your appliance details</li>
+                            <li>Get instant energy consumption prediction</li>
+                            <li>View cost analysis and recommendations</li>
+                        </ol>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-upload text-primary"></i> Batch Analysis</h6>
+                        <ol>
+                            <li>Prepare a CSV file with appliance data</li>
+                            <li>Upload the file</li>
+                            <li>Get predictions for all appliances</li>
+                            <li>Download results with analysis</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Supported Appliances -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-plug"></i> Supported Appliances</h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6 col-md-2 mb-3">
+                        <i class="fas fa-snowflake fa-2x mb-2" style="color: var(--secondary-color);"></i>
+                        <br><small>Refrigerator</small>
+                    </div>
+                    <div class="col-6 col-md-2 mb-3">
+                        <i class="fas fa-wind fa-2x mb-2" style="color: var(--secondary-color);"></i>
+                        <br><small>Air Conditioner</small>
+                    </div>
+                    <div class="col-6 col-md-2 mb-3">
+                        <i class="fas fa-tshirt fa-2x mb-2" style="color: var(--secondary-color);"></i>
+                        <br><small>Washing Machine</small>
+                    </div>
+                    <div class="col-6 col-md-2 mb-3">
+                        <i class="fas fa-tv fa-2x mb-2" style="color: var(--secondary-color);"></i>
+                        <br><small>Television</small>
+                    </div>
+                    <div class="col-6 col-md-2 mb-3">
+                        <i class="fas fa-fire fa-2x mb-2" style="color: var(--secondary-color);"></i>
+                        <br><small>Microwave</small>
+                    </div>
+                    <div class="col-6 col-md-2 mb-3">
+                        <i class="fas fa-plus fa-2x mb-2" style="color: var(--secondary-color);"></i>
+                        <br><small>And more...</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

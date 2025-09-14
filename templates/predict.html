@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+
+{% block title %}Predict Energy Consumption{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0"><i class="fas fa-calculator"></i> Appliance Energy Consumption Prediction</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" id="predictionForm">
+                    <div class="row">
+                        <!-- Basic Appliance Information -->
+                        <div class="col-md-6">
+                            <h5 class="mb-3"><i class="fas fa-plug"></i> Appliance Details</h5>
+                            
+                            <div class="mb-3">
+                                <label for="appliance_type" class="form-label">Appliance Type *</label>
+                                <select class="form-select" id="appliance_type" name="appliance_type" required>
+                                    <option value="">Select appliance type</option>
+                                    <option value="Refrigerator">Refrigerator</option>
+                                    <option value="Air_Conditioner">Air Conditioner</option>
+                                    <option value="Washing_Machine">Washing Machine</option>
+                                    <option value="Television">Television</option>
+                                    <option value="Microwave">Microwave</option>
+                                    <option value="Water_Heater">Water Heater</option>
+                                    <option value="Dishwasher">Dishwasher</option>
+                                    <option value="Computer">Computer</option>
+                                    <option value="Heater">Heater</option>
+                                    <option value="Fan">Fan</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="power_rating" class="form-label">Power Rating (Watts) *</label>
+                                <input type="number" class="form-control" id="power_rating" name="power_rating" 
+                                       min="1" max="10000" step="1" required>
+                                <div class="form-text">Typical range: 50-5000 watts</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="usage_hours" class="form-label">Usage Hours per Day *</label>
+                                <input type="number" class="form-control" id="usage_hours" name="usage_hours" 
+                                       min="0" max="24" step="0.1" required>
+                                <div class="form-text">How many hours per day is this appliance used?</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="efficiency_rating" class="form-label">Efficiency Rating (1-5 stars) *</label>
+                                <select class="form-select" id="efficiency_rating" name="efficiency_rating" required>
+                                    <option value="">Select efficiency rating</option>
+                                    <option value="1">1 Star (Least Efficient)</option>
+                                    <option value="2">2 Stars</option>
+                                    <option value="3">3 Stars (Average)</option>
+                                    <option value="4">4 Stars</option>
+                                    <option value="5">5 Stars (Most Efficient)</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="appliance_age" class="form-label">Appliance Age (Years) *</label>
+                                <input type="number" class="form-control" id="appliance_age" name="appliance_age" 
+                                       min="0" max="50" step="0.1" required>
+                                <div class="form-text">Age affects efficiency and energy consumption</div>
+                            </div>
+                        </div>
+
+                        <!-- Household and Usage Information -->
+                        <div class="col-md-6">
+                            <h5 class="mb-3"><i class="fas fa-home"></i> Household Information</h5>
+                            
+                            <div class="mb-3">
+                                <label for="household_size" class="form-label">Household Size *</label>
+                                <input type="number" class="form-control" id="household_size" name="household_size" 
+                                       min="1" max="20" step="1" required>
+                                <div class="form-text">Number of people in household</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="location" class="form-label">Location Type</label>
+                                <select class="form-select" id="location" name="location">
+                                    <option value="Urban">Urban</option>
+                                    <option value="Suburban">Suburban</option>
+                                    <option value="Rural">Rural</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="income_level" class="form-label">Income Level</label>
+                                <select class="form-select" id="income_level" name="income_level">
+                                    <option value="Low">Low</option>
+                                    <option value="Medium" selected>Medium</option>
+                                    <option value="High">High</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="season" class="form-label">Current Season</label>
+                                <select class="form-select" id="season" name="season">
+                                    <option value="Spring">Spring</option>
+                                    <option value="Summer" selected>Summer</option>
+                                    <option value="Autumn">Autumn</option>
+                                    <option value="Winter">Winter</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="usage_pattern" class="form-label">Usage Pattern</label>
+                                <select class="form-select" id="usage_pattern" name="usage_pattern">
+                                    <option value="Occasional">Occasional</option>
+                                    <option value="Light">Light</option>
+                                    <option value="Moderate" selected>Moderate</option>
+                                    <option value="Heavy">Heavy</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                        <button type="submit" class="btn btn-primary btn-lg me-md-2" id="predictBtn">
+                            <i class="fas fa-calculator"></i> Predict Energy Consumption
+                        </button>
+                        <button type="reset" class="btn btn-outline-secondary btn-lg" onclick="resetForm()">
+                            <i class="fas fa-undo"></i> Reset Form
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Power Rating Guidelines -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-lightbulb"></i> Power Rating Guidelines</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <ul class="list-unstyled">
+                            <li><strong>Refrigerator:</strong> 100-800W</li>
+                            <li><strong>Air Conditioner:</strong> 500-3000W</li>
+                            <li><strong>Washing Machine:</strong> 300-2000W</li>
+                            <li><strong>Television:</strong> 50-400W</li>
+                            <li><strong>Microwave:</strong> 600-1500W</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <ul class="list-unstyled">
+                            <li><strong>Water Heater:</strong> 1000-5000W</li>
+                            <li><strong>Dishwasher:</strong> 1200-2400W</li>
+                            <li><strong>Computer:</strong> 200-800W</li>
+                            <li><strong>Heater:</strong> 500-3000W</li>
+                            <li><strong>Fan:</strong> 20-200W</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Auto-populate power rating based on appliance type
+    document.getElementById('appliance_type').addEventListener('change', function() {
+        const powerRatings = {
+            'Refrigerator': 400,
+            'Air_Conditioner': 1500,
+            'Washing_Machine': 800,
+            'Television': 150,
+            'Microwave': 1000,
+            'Water_Heater': 3000,
+            'Dishwasher': 1800,
+            'Computer': 400,
+            'Heater': 1500,
+            'Fan': 75
+        };
+        
+        const powerInput = document.getElementById('power_rating');
+        if (powerRatings[this.value]) {
+            powerInput.value = powerRatings[this.value];
+        }
+    });
+
+    // Auto-populate usage hours based on appliance type
+    document.getElementById('appliance_type').addEventListener('change', function() {
+        const usageHours = {
+            'Refrigerator': 24,
+            'Air_Conditioner': 8,
+            'Washing_Machine': 1,
+            'Television': 6,
+            'Microwave': 0.5,
+            'Water_Heater': 3,
+            'Dishwasher': 1,
+            'Computer': 8,
+            'Heater': 6,
+            'Fan': 12
+        };
+        
+        const usageInput = document.getElementById('usage_hours');
+        if (usageHours[this.value]) {
+            usageInput.value = usageHours[this.value];
+        }
+    });
+
+    function resetForm() {
+        document.getElementById('predictionForm').reset();
+    }
+
+    // Form validation
+    document.getElementById('predictionForm').addEventListener('submit', function(e) {
+        const powerRating = parseFloat(document.getElementById('power_rating').value);
+        const usageHours = parseFloat(document.getElementById('usage_hours').value);
+        
+        if (powerRating <= 0) {
+            alert('Power rating must be greater than 0');
+            e.preventDefault();
+            return;
+        }
+        
+        if (usageHours < 0 || usageHours > 24) {
+            alert('Usage hours must be between 0 and 24');
+            e.preventDefault();
+            return;
+        }
+        
+        // Show loading state
+        document.getElementById('predictBtn').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Predicting...';
+        document.getElementById('predictBtn').disabled = true;
+    });
+</script>
+{% endblock %}

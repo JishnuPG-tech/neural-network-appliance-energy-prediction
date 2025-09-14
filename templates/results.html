@@ -1,0 +1,270 @@
+{% extends "base.html" %}
+
+{% block title %}Prediction Results{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-10 mx-auto">
+        <!-- Results Header -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h4 class="mb-0"><i class="fas fa-chart-line"></i> Energy Consumption Prediction Results</h4>
+            </div>
+            <div class="card-body text-center">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="stat-number">{{ "%.2f"|format(prediction) }}</div>
+                        <div class="stat-label">kWh/day</div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-number">₹{{ "%.0f"|format(daily_cost) }}</div>
+                        <div class="stat-label">Daily Cost</div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-number">₹{{ "%.0f"|format(monthly_cost) }}</div>
+                        <div class="stat-label">Monthly Cost</div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-number">₹{{ "%.0f"|format(yearly_cost) }}</div>
+                        <div class="stat-label">Yearly Cost</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Appliance Information -->
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-info-circle"></i> Appliance Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-borderless">
+                            <tr>
+                                <td><strong>Type:</strong></td>
+                                <td>{{ appliance_data.get('appliance_type', 'N/A').replace('_', ' ') }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Power Rating:</strong></td>
+                                <td>{{ appliance_data.get('power_rating', 'N/A') }} Watts</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Usage Hours:</strong></td>
+                                <td>{{ appliance_data.get('usage_hours', 'N/A') }} hours/day</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Efficiency Rating:</strong></td>
+                                <td>
+                                    {% for i in range(appliance_data.get('efficiency_rating', 0)) %}
+                                        <i class="fas fa-star text-warning"></i>
+                                    {% endfor %}
+                                    {% for i in range(5 - appliance_data.get('efficiency_rating', 0)) %}
+                                        <i class="far fa-star text-muted"></i>
+                                    {% endfor %}
+                                    ({{ appliance_data.get('efficiency_rating', 'N/A') }}/5)
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Age:</strong></td>
+                                <td>{{ appliance_data.get('appliance_age', 'N/A') }} years</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Household Size:</strong></td>
+                                <td>{{ appliance_data.get('household_size', 'N/A') }} people</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Environmental Impact -->
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-leaf"></i> Environmental Impact</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <div class="stat-number text-success">{{ "%.2f"|format(carbon_footprint.daily_co2_kg) }}</div>
+                                <div class="stat-label">kg CO₂/day</div>
+                            </div>
+                            <div class="col-6">
+                                <div class="stat-number text-success">{{ "%.1f"|format(carbon_footprint.yearly_co2_tonnes) }}</div>
+                                <div class="stat-label">tonnes CO₂/year</div>
+                            </div>
+                        </div>
+                        <hr>
+                        <p class="mb-0 text-muted small">
+                            <i class="fas fa-info-circle"></i> 
+                            Carbon footprint calculated using India's average grid emission factor (0.82 kg CO₂/kWh).
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Energy Breakdown -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-chart-pie"></i> Energy Consumption Breakdown</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 text-center">
+                        <canvas id="energyChart" width="200" height="200"></canvas>
+                    </div>
+                    <div class="col-md-9">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Period</th>
+                                    <th>Energy (kWh)</th>
+                                    <th>Cost (₹)</th>
+                                    <th>CO₂ (kg)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><i class="fas fa-sun text-warning"></i> Daily</td>
+                                    <td>{{ "%.2f"|format(prediction) }}</td>
+                                    <td>₹{{ "%.0f"|format(daily_cost) }}</td>
+                                    <td>{{ "%.2f"|format(carbon_footprint.daily_co2_kg) }}</td>
+                                </tr>
+                                <tr>
+                                    <td><i class="fas fa-calendar-week text-info"></i> Weekly</td>
+                                    <td>{{ "%.2f"|format(prediction * 7) }}</td>
+                                    <td>₹{{ "%.0f"|format(daily_cost * 7) }}</td>
+                                    <td>{{ "%.2f"|format(carbon_footprint.daily_co2_kg * 7) }}</td>
+                                </tr>
+                                <tr>
+                                    <td><i class="fas fa-calendar-alt text-primary"></i> Monthly</td>
+                                    <td>{{ "%.2f"|format(prediction * 30) }}</td>
+                                    <td>₹{{ "%.0f"|format(monthly_cost) }}</td>
+                                    <td>{{ "%.2f"|format(carbon_footprint.monthly_co2_kg) }}</td>
+                                </tr>
+                                <tr class="table-active">
+                                    <td><i class="fas fa-calendar text-success"></i> Yearly</td>
+                                    <td><strong>{{ "%.0f"|format(prediction * 365) }}</strong></td>
+                                    <td><strong>₹{{ "%.0f"|format(yearly_cost) }}</strong></td>
+                                    <td><strong>{{ "%.0f"|format(carbon_footprint.yearly_co2_kg) }}</strong></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recommendations -->
+        {% if recommendations %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-lightbulb"></i> Energy Efficiency Recommendations</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for recommendation in recommendations %}
+                    <div class="col-md-6 mb-3">
+                        <div class="alert alert-info mb-0">
+                            <i class="fas fa-tip"></i> {{ recommendation }}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Comparison and Savings -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-calculator"></i> Potential Savings Calculator</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Upgrade to 5-Star Efficiency</h6>
+                        {% if appliance_data.get('efficiency_rating', 3) < 5 %}
+                        {% set efficiency_improvement = (5 - appliance_data.get('efficiency_rating', 3)) * 0.15 %}
+                        {% set improved_consumption = prediction * (1 - efficiency_improvement) %}
+                        {% set daily_savings = (prediction - improved_consumption) * 6 %}
+                        <p>
+                            <strong>Estimated Daily Savings:</strong> ₹{{ "%.0f"|format(daily_savings) }}<br>
+                            <strong>Yearly Savings:</strong> ₹{{ "%.0f"|format(daily_savings * 365) }}<br>
+                            <strong>Reduced Consumption:</strong> {{ "%.2f"|format(prediction - improved_consumption) }} kWh/day
+                        </p>
+                        {% else %}
+                        <p class="text-success">
+                            <i class="fas fa-check-circle"></i> 
+                            Your appliance already has the highest efficiency rating!
+                        </p>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Usage Optimization</h6>
+                        {% set optimized_hours = appliance_data.get('usage_hours', 8) * 0.8 %}
+                        {% set optimized_consumption = prediction * 0.8 %}
+                        {% set usage_savings = (prediction - optimized_consumption) * 6 %}
+                        <p>
+                            <strong>20% Reduced Usage:</strong><br>
+                            <strong>Daily Savings:</strong> ₹{{ "%.0f"|format(usage_savings) }}<br>
+                            <strong>Yearly Savings:</strong> ₹{{ "%.0f"|format(usage_savings * 365) }}<br>
+                            <strong>New Usage:</strong> {{ "%.1f"|format(optimized_hours) }} hours/day
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="text-center">
+            <a href="{{ url_for('predict') }}" class="btn btn-primary">
+                <i class="fas fa-redo"></i> New Prediction
+            </a>
+            <a href="{{ url_for('batch_predict') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-upload"></i> Batch Analysis
+            </a>
+            <button onclick="window.print()" class="btn btn-outline-info">
+                <i class="fas fa-print"></i> Print Results
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Energy consumption donut chart
+    const ctx = document.getElementById('energyChart').getContext('2d');
+    const dailyEnergy = parseFloat('{{ prediction }}');
+    const otherEnergy = Math.max(0, 30 - dailyEnergy); // Assuming 30 kWh total household consumption
+    
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['This Appliance', 'Other Appliances'],
+            datasets: [{
+                data: [dailyEnergy, otherEnergy],
+                backgroundColor: ['#3498db', '#ecf0f1'],
+                borderWidth: 2,
+                borderColor: '#fff'
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                },
+                title: {
+                    display: true,
+                    text: 'Daily Energy Share'
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}
